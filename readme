@@ -1,0 +1,94 @@
+#############################################################################
+# Copyright  2007, 2008 Michael John <perlmon.linux@gmail.com>
+# All Rights Reserved
+#
+# This file is part of the PerlMon package.
+#
+#    PerlMon is free software; you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation; under current version 3 of the License.
+#
+#   
+#	 The above copyright notice and this permission notice shall be included
+#    in all copies or substantial portions of the Software.
+#	 
+#	 PerlMon is distributed in the hope that it will be useful.
+#
+#    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS  
+#    OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF               
+#    MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
+#    NO EVENT SHALL THE ABOVE COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,      
+#    DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR    
+#    OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+#    USE OR OTHER DEALINGS IN THE SOFTWARE. 
+#
+#    You should have received a copy of the GNU General Public License
+#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+############################################################################
+
+			README file for the PerlMon package
+			
+			
+Dependencies required by PerlMon:
+	
+	Perl
+	Gtk2 (optional) (needed to run PerlMon in GUI mode)
+	Gtk2-Perl (only needed if you do not have a full Gtk2 collection)
+	Nvidia driver (Optional) (provides better GPU information)
+		(ATI and Intel support will come in later releases)
+	
+			
+	
+NOTE: Currently you don't need to install anything to run PerlMon, 
+	as long as Perl is installed you can run in text mode and 
+	if Gtk2 is installed you can run in GUI mode.
+	I plan on providing a basic installer some time soon.
+	
+	
+Installing PerlMon:
+	
+	To install PerlMon follow these steps:
+		open up a terminal and change directories to the PerlMon package.
+		Example(if it's in your home directory): cd ~/PerlMon-#.#.#
+		then type (super user privileges needed):
+			perl Installer
+
+		
+How to run PerlMon:
+	
+	In the terminal you can type:
+		perlmon
+	
+	or for help type:
+		perlmon -h
+		
+		
+PerlMon can run a Gtk2 based GUI or a text dump in a terminal.
+By default the PerlMon script will display a GUI. To run PerlMon without 
+a GUI, then you will have to run PerlMon in a terminal with the --nogui
+option.
+
+	Example:
+		perl perlmon --nogui
+		-OR-
+		perl perlmon -n
+		
+		
+To find what version of PerlMon you are running you can use the --version
+option in the terminal.
+	
+	Exapmle:
+		perl perlmon --version
+		-OR-
+		perl perlmon -v
+
+To view all of the options you can run with PerlMon, you can use the 
+--help option.
+	
+	Example:
+		perl perlmon --help
+		-OR-
+		perl perlmon -h
+		
+	

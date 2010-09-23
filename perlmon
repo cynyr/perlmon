@@ -1,0 +1,453 @@
+#!/usr/bin/perl
+
+
+#############################################################################
+# Copyright(c)  2007, 2008 Michael John <perlmon.linux@gmail.com>
+# All Rights Reserved
+#
+# This file is part of the PerlMon package.
+#
+#    PerlMon is free software; you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation; under current version 3 of the License.
+#
+#    PerlMon is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY;  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+############################################################################
+
+use warnings;
+use strict;
+use PerlMon::OS;
+use PerlMon::CPU;
+use PerlMon::Memory;
+use PerlMon::Monitor;
+use PerlMon::GPU;
+use PerlMon::HD;
+use PerlMon::Sensors;
+use Getopt::Long;
+use constant IMAGE_PATH => '/usr/share/perlmon/images/';
+use constant TEXT_SPACER => 78;
+my $VERSION = "0.2.0"; # constant
+
+
+#############################################################################
+#
+# Command Line options processing
+#
+my $opt_h;
+my $opt_n;
+my $opt_v;
+my $opt_s;
+GetOptions("help|h" 	=> \$opt_h,
+	   "nogui|n"	=> \$opt_n,
+	   "version|v"	=> \$opt_v,
+	   "simple|s"	=> \$opt_s
+);
+
+##
+## Help Option, prints to screen the help options and then exits.
+if ($opt_h) {
+	print qq(\n\nPerlMon: version $VERSION \n
+	The PerlMon report tool.
+	
+	This program is used to view hardware information and Operating System 
+	settings.
+	
+	Copyright (c) 2007, 2008 Michael John <perlmon.linux\@gmail.com>
+	
+	PerlMon is Licence under the GNU General Public License.
+	This program comes with ABSOLUTELY NO WARRANTY.
+	
+   perlmon.pl [options]
+   
+   	-v, --version
+   		Print the PerlMon version and exit.
+   	
+   	-h. --help
+   		Print usage information and exit.
+	
+	-n, --nogui
+		Print out information to console only and exit.
+
+	-s, --simple
+		Print out some basic information on the OS.
+		
+	\n\n
+	Some Examples:
+		perlmon
+		perlmon -s
+		perlmon -n
+		perlmon -s -n
+	\n\n) ## End of --help print out 
+	and exit;
+}
+
+##
+## Version Option, prints to screen version and then exits.
+if ($opt_v) {	print "PerlMon Version $VERSION\n\n" and exit; }
+#
+# End command line processing
+#
+############################################################################
+
+
+## functions
+sub Header { 
+	my $id = shift;
+	"\#" x TEXT_SPACER,"\n".
+	" " x int( (80 - length($id))/2 ),"$id \n",
+	"\#" x TEXT_SPACER,"\n";
+};
+	     
+## Making object
+my $OS = PerlMon::OS->new();
+my $CPU = PerlMon::CPU->new();
+my $Memory = PerlMon::Memory->new();
+my $HD = PerlMon::HD->new();
+my $Monitor = PerlMon::Monitor->new();
+my $GPU = PerlMon::GPU->new();
+my $Sensor = PerlMon::Sensors->new();
+
+
+
+## printing out info to screen
+print Header("Start");
+print qq(\nPerlMon: version $VERSION \n
+	The PerlMon report tool.
+	
+	This program is used to view hardware information and Operating System 
+	settings.
+	
+	Copyright (c)  2007, 2008 Michael John <perlmon.linux\@gmail.com>
+	
+	PerlMon is Licence under the GNU General Public License.
+	This program comes with ABSOLUTELY NO WARRANTY.\n
+);
+
+
+##
+## No GUI Option, outputs information to screen/terminal only.
+if ($opt_n) {
+	## finding info
+	$OS->find_info(0); 
+	
+	## printing out info to screen
+	## simple option
+	if ($opt_s) {
+		print Header(""),"\n",$OS->toString(),"\n\n";
+		exit(0);
+	}
+	
+	## finding rest of info 
+	$CPU->find_info(0);
+	$Memory->find_info();
+	$HD->find_info();
+	$Monitor->find_info();
+	$GPU->find_info(0);
+	$Sensor->find_info();
+
+	## printing out info to screen
+	## for Text mode
+	print Header("Operating System Info");
+	print $OS->toString(),"\n";
+
+	print Header("CPU Info");
+	print $CPU->toString(),"\n";
+
+	print Header("Memory and Swap Info");
+	print $Memory->toString(),"\n";
+
+	print Header("Hard Drive Info");
+	print $HD->toString(),"\n";
+
+	print Header("Monitor Info");
+	print $Monitor->toString(),"\n";
+
+	print Header("GPU Info");
+	print $GPU->toString(),"\n";
+	
+	print Header("Sensors");
+	print $Sensor->toString(),"\n";
+
+
+} else {  ## For GTK2 GUI
+
+
+	print "#" x TEXT_SPACER,"\n";
+	use constant FALSE => 0;
+	use constant TRUE => 1;
+	use constant WINDOW_HEIGHT => 400;
+	use constant WINDOW_WIDTH  => 600;
+
+	##
+	## Test to see if the module Gtk2.pm is install
+	## If Perl can not find the Gtk2.pm module then a
+	## warning message if outputed to the screen.
+	## 
+	## This check is preformed so a user without Gtk2 can
+	## still run PerlMon in text-mode.
+	BEGIN {
+		my $mod = "Gtk2 '-init'";
+		eval "use $mod;"; warn $@ if $@;
+	}
+
+if ($opt_s) {
+	# create simple window
+	$OS->find_info(1);
+	my ($window, $table, $label, $image);
+	
+	$window = Gtk2::Window->new("toplevel");
+	$window->signal_connect( destroy => sub { Gtk2->main_quit; });
+	$window->set_title("PerlMon");
+	$window->set_position("center");
+	$window->set_border_width(10);
+	$window->set_default_size(500, 100);
+	$window->set_icon_from_file(IMAGE_PATH."./window_logo.png");
+
+	$table = Gtk2::Table->new(1, 5, FALSE);
+	$image = Gtk2::Image->new_from_file(IMAGE_PATH.$OS->getLogo());
+	$table->attach($image, 3, 5, 0, 1, 'fill', 'fill', 5, 5);
+	
+	$label = Gtk2::Label->new($OS->toString(0));
+	$table->attach($label, 0, 3, 0, 1, 'expand', 'expand', 5, 5);
+	$window->add($table);
+	$window->show_all;
+
+	Gtk2->main;
+	exit 0;
+	
+}
+
+	## finding info
+	$OS->find_info(1); 
+	$CPU->find_info(1);
+	$Memory->find_info();
+	$HD->find_info();
+	$Monitor->find_info();
+	$GPU->find_info(1);
+	$Sensor->find_info();
+	
+#----------------------------------------------------------------------
+# Beginning of the GTK2 GUI code
+#----------------------------------------------------------------------
+my ($window, $hbox, $vbox, $vboxmenu,$frame, $label, $button, $table, 
+	$notebook, $pagetitle, $entry, $pbar, $align, $separator, $image,
+	$statusbar
+);
+
+
+$window = Gtk2::Window->new("toplevel");
+$window->signal_connect( destroy => sub { Gtk2->main_quit; });
+$window->set_title("PerlMon");
+$window->set_position("center");
+$window->set_border_width(10);
+$window->set_default_size(WINDOW_WIDTH, WINDOW_HEIGHT);
+$window->set_icon_from_file(IMAGE_PATH."window_logo.png");
+
+$table = Gtk2::Table->new(5, 6, FALSE);
+$window->add($table);
+
+## Creating a notebook, placing the positions of the tabs
+$notebook = Gtk2::Notebook->new();
+$notebook->set_tab_pos( 'GTK_POS_TOP' );
+$table->attach_defaults($notebook, 0, 6, 0, 4);
+$notebook->show();
+
+## Statusbar
+$statusbar = Gtk2::Statusbar->new();
+$statusbar->set_has_resize_grip(FALSE);
+$statusbar->push(1, "PerlMon-$VERSION");
+$table->attach_defaults($statusbar, 0, 6, 4, 5);
+
+## Creating a VBox
+$vbox = Gtk2::VBox->new(FALSE, 5);
+
+#----------------------------------------------------------------------
+# Appending pages to the notebook
+# Each new page is identified with a comment
+#----------------------------------------------------------------------
+#
+#------------------------System & Distribution stats-------------------
+$frame = Gtk2::Frame->new("OS");
+$frame->set_border_width(10);
+$frame->show();
+
+$table = Gtk2::Table->new(1, 5, FALSE);
+$image = Gtk2::Image->new_from_file(IMAGE_PATH.$OS->getLogo());
+$table->attach($image, 3, 5, 0, 1, 'fill', 'fill', 5, 5);
+
+$label = Gtk2::Label->new($OS->toString(0));
+$table->attach($label, 0, 3, 0, 1, 'expand', 'expand', 5, 5);
+$frame->add($table);
+
+$pagetitle = Gtk2::Label->new("OS");
+$notebook->append_page($frame, $pagetitle);
+
+#-------------------------------CPU stats------------------------------
+$frame = Gtk2::Frame->new("CPU");
+$frame->set_border_width(10);
+$frame->show();
+
+## Table and separators
+$table = Gtk2::Table->new(2, 5, FALSE);
+$separator = Gtk2::VSeparator->new();
+$table->attach_defaults($separator, 3, 4, 0, 1);
+$separator = Gtk2::HSeparator->new();
+$table->attach($separator, 0, 5, 1, 2, 'fill', 'fill', 2, 2);
+
+## Adding image and labels to table
+$image = Gtk2::Image->new_from_file(IMAGE_PATH.$CPU->getLogo());
+$table->attach($image, 4, 5, 0, 1, 'expand', 'expand', 2, 2);
+$label = Gtk2::Label->new($CPU->toString_top_left());
+$table->attach($label, 0, 3, 0, 1, 'expand', 'expand', 2, 2);
+
+$label = Gtk2::Label->new($CPU->toString_bottom());
+$table->attach($label, 0, 5, 2, 3, 'expand', 'expand', 2, 2);
+$frame->add($table);
+
+$pagetitle = Gtk2::Label->new("CPU");
+$notebook->append_page($frame, $pagetitle);
+
+#-----------------------------Memory stats-----------------------------
+## since there are two frames for this notebook page,
+## they'll be in a vbox
+my $vbox4frame = Gtk2::VBox->new(FALSE, 2);
+$frame = Gtk2::Frame->new("Memory");
+$frame->set_border_width(10);
+$frame->show();
+$vbox4frame->add($frame);
+
+$table = Gtk2::Table->new(2, 1, FALSE);
+$pbar = Gtk2::ProgressBar->new();
+$label = Gtk2::Label->new($Memory->toString_memory());
+
+$table->attach($label, 0, 1, 0, 1, 'expand', 'expand', 2, 2);
+$pbar->set_text($Memory->getPercentage("Memory")."% used");
+$pbar->set_fraction($Memory->getFraction("Memory"));
+$table->attach($pbar, 0, 1, 1, 2, 'fill', 'fill', 5, 10);
+
+## Adding memory info to frame
+$frame->add($table);
+
+## Now the section for the Swap
+$frame = Gtk2::Frame->new("Swap");
+$frame->set_border_width(10);
+$vbox4frame->add($frame);
+
+$table = Gtk2::Table->new(2 ,1, FALSE);
+$pbar = Gtk2::ProgressBar->new();
+$label = Gtk2::Label->new($Memory->toString_swap());
+
+$table->attach($label, 0, 1, 0, 1, 'expand', 'expand', 2, 2);
+$pbar->set_text($Memory->getPercentage("Swap"). "% used") if $Memory->{TOTAL_S} > 0;
+$pbar->set_text("No Swap") if $Memory->{TOTAL_S} == 0;
+$pbar->set_fraction($Memory->getFraction("Swap")) if $Memory->{TOTAL_S} > 0;
+$table->attach($pbar, 0, 1, 1, 2, 'fill', 'fill', 5, 10);
+
+## Adding swap info to frame
+$frame->add($table);
+
+## Adding everything to a notebook page
+$notebook->append_page($vbox4frame,"Memory/Swap");
+
+#----------------------Hard Drive Info---------------------------------
+$frame = Gtk2::Frame->new("Hard Drive");
+$frame->set_border_width(10);
+$frame->show();
+
+$vbox = Gtk2::VBox->new(FALSE, 5);
+
+for (my $i = 0; $i < $HD->{NUM_PARTS}; ++$i) {
+	$pbar = Gtk2::ProgressBar->new;
+	$label = Gtk2::Label->new($HD->toString_single($i));
+	$separator = Gtk2::HSeparator->new();
+	$pbar->set_text("$HD->{USEDP}[$i] used ($HD->{USED}[$i])");
+	chop $HD->{USEDP}[$i];
+	$pbar->set_fraction( $HD->{USEDP}[$i] / 100 );
+	$vbox->add($label);
+	$vbox->add($pbar);
+	$vbox->pack_start($separator, FALSE, FALSE, 0) unless $i + 1 == $HD->{NUM_PARTS};
+	$pbar->show();
+	$separator->show();
+}
+$frame->add($vbox);
+
+$pagetitle = Gtk2::Label->new("Hard Drive");
+$notebook->append_page($frame, $pagetitle);
+
+
+#----------------------------Video Card--------------------------------
+$frame = Gtk2::Frame->new("GPU");
+$frame->set_border_width(10);
+$frame->show();
+
+$vbox = Gtk2::VBox->new(TRUE, 0);
+$table = Gtk2::Table->new(1, 5, FALSE);
+$table->attach($vbox, 3, 5, 0, 1, 'fill', 'fill', 5, 5);
+$frame->add($table);
+$image = Gtk2::Image->new_from_file(IMAGE_PATH.$GPU->{LOGO});
+$vbox->pack_start($image, FALSE, FALSE, 5);
+
+$label = Gtk2::Label->new($GPU->toString());
+#$label->set_justify('center');
+$table->attach($label, 0, 3, 0, 1, 'expand', 'expand', 5, 5);
+
+## If Nvidia GPU then add button to open nvidia-settings tool
+if ($GPU->{VENDOR} =~ /NVIDIA/i) {
+	$button = Gtk2::Button->new_with_label("Open NVIDIA X server settings");
+	$button->signal_connect("clicked" => sub{ system("nvidia-settings &"); });
+	$button->set_image($image = Gtk2::Image->new_from_file(IMAGE_PATH."./nvidia_button.png"));
+	$vbox->pack_start($button, FALSE, FALSE, 2);
+}
+
+$pagetitle = Gtk2::Label->new("Video Card");
+$notebook->append_page($frame, $pagetitle);
+
+#--------------------------Monitor-------------------------------------
+$frame = Gtk2::Frame->new("Monitor");
+$frame->set_border_width(10);
+$frame->show();
+
+#$label = Gtk2::Label->new($Monitor->toString());
+#$label->set_justify('fill');
+$frame->add(Gtk2::Label->new($Monitor->toString()));
+$label->show();
+
+$notebook->append_page($frame, "Monitor");
+
+########################################################################
+##            Testing             ##########################################
+########################################################################
+$frame = Gtk2::Frame->new("Temps");
+$frame->set_border_width(10);
+$frame->show();
+
+my $drive = $HD->{FS}[0];
+chop $drive;
+
+my $label_temps = Gtk2::Label->new(`hddtemp $drive`);
+
+$table = Gtk2::Table->new(1, 5, FALSE);
+$table->attach($label_temps, 3, 5, 0, 1, 'fill', 'fill', 5, 5);
+$table->attach(Gtk2::Label->new("lm_sensors:\n\n".$Sensor->toString()), 3, 5, 0, 1, 'fill', 'fill', 5, 5);
+$frame->add($table);
+$notebook->append_page($frame, "Temps");
+
+########################################################################
+##           End Testing         ###########################################
+########################################################################
+
+##
+## End of adding notebook pages.
+##
+$notebook->set_current_page(0);
+$window->show_all;
+
+Gtk2->main;
+##----------------- End of GTK2 GUI code ------------------------------------
+
+}

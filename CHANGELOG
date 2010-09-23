@@ -1,0 +1,72 @@
+####################################################
+ChangeLog
+####################################################
+
+5/8/07	
+	Added distro support for Enlisy to Distro.pm
+	
+6/8/07
+	Bug Fix: Gtk2 had to be installed even in text mode.
+	Gtk2 and Glib no longer need to be install to run in text mode.
+	
+7/8/07
+	Cleaned up some code.
+	Added more documentation
+
+8/6/07
+	Release 0.1.1
+	
+8/24/07
+	Combining the two methods in Distro.pm (Gtk2 code will not crash program
+		if not on system)
+	
+10/3/07
+	Divide by zero error in Memory.pm fixed
+	Cleaned up files for release 0.1.2
+
+10/8/07
+	Release 0.1.2
+
+10/13/07
+	Added support for hddtemp, A hard drive temperature monitoring tool
+	Added statusbar, displays PerlMon version and start-up time stamp
+
+01/26/08
+	Added support for lm_sensors
+	Distro.pm cleaned up, no more systems calls(terminal spawns)
+	Release 0.1.3
+
+01/30/08
+	WMDE.pm modified, variable @array removed
+	CPU.pm modified, Added flag key, now sees if CPU has mmx, sse, sse2, sse3, & 3dnow
+	Sensors.pm modified, Added backup way to find MB_TEMP
+
+01/31/08
+	Removed time stamp from status bar on GUI
+	OS.pm modified, better way to get user name
+	OS.pm + added user_id data member to hash
+
+02/09/08
+	Variable name changes in all modules
+	Documentation added
+	Screen color added under monitor tab
+	Release 0.1.4
+
+05/17/08
+	Modules for PerlMon are now installable. Were created with 'h2xs -X'.
+	The perlmon script will now require that the PerlMon::Modules to be installed, or somewhere in the @INC.
+	Testing of the modules.
+	Simple display mode for the GUI
+	Reconize Color theme, window theme, icon set, and system font of KDE
+
+05/31/08
+	Installer finished
+	Setting.pm removed and fs-skip.txt removed (replace with perlmon configure file)
+	PerlMon configure file added (perlmonrc). Durning install its added to /etc and when running if one is not found in $HOME then one will be copied over from /etc.
+	The path to the images folder now is in one spot instead of the embedded 5 different spots.
+	Numerous changes to the Modules and perlmon script:
+		-Image paths
+		-Redundant code in Memory.pm
+		-In OS.pm reverted back to initial way to display username and host
+		-Simple display mode for terminal
+	Release 0.2.0

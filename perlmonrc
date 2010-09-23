@@ -1,0 +1,6 @@
+# You can add a file system type to this list if you would like to exclude it
+# from being displayed under the Hard drive tab in PerlMon. 
+# By default tmpfs and usbfs are excluded
+
+tmpfs
+usbfs 

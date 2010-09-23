@@ -1,0 +1,47 @@
+#!/usr/bin/env perl
+
+use warnings;
+use strict;
+use File::Copy;
+my $INSTALL_DIR = "/usr/share/perlmon";
+
+## Tesing to see if perl-Gtk2 is installed
+BEGIN {
+	eval "use Gtk2 '-init'"; 
+	if ($@) {
+		warn "perl-Gtk2 does not appear to be installed. You will only be able to run perlmon in a terminal with the 'nogui' option set. (perlmon -n) (perlmon --nogui)\n\n";
+	} else {
+		print " :: perl-Gtk2 was found\n";
+	}
+}
+
+## making install directory
+mkdir("$INSTALL_DIR",755);
+print " :: install dir created\n";
+
+## copying over images
+`cp -R images $INSTALL_DIR`;
+
+## Installing modules
+`perl Makefile.PL`;
+`make`;
+`make install`;
+print " :: modules installed\n";
+
+## copying over perlmon file
+copy("perlmon", "$INSTALL_DIR/perlmon") or die "Could not copy file 'perlmon' to directory";
+print " :: 'perlmon' file installed\n";
+
+## copying over perlmonrc configuration file
+copy("perlmonrc", "/etc/perlmonrc") or die "Could not copy file 'perlmonrc' to directory";
+print " :: config file installed\n";
+
+## creating a soft link in /usr/bin
+`ln -s $INSTALL_DIR/perlmon /usr/bin/perlmon`;
+
+## setting rwx rights
+`chmod 755 $INSTALL_DIR/perlmon`;
+
+
+print "Installer finished\n";
+
